@@ -76,12 +76,11 @@ var (
 )
 
 func main() {
-	fmt.Println(time.Now().UTC())
 	db, err := dbOp.Connect("root:@tcp(127.0.0.1:3306)/golang")
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer dbOp.Close(db)
 	var durMax time.Duration = 0
 	switch kingpinOp.Read(app, os.Args[1:]) {
 	case register.FullCommand():
@@ -103,6 +102,10 @@ func main() {
 		}
 		for _, t := range tasks {
 			n.Register(&eventObserver{task: t.Task, time: t.Date})
+			err := dbOp.DeleteTask(db, t.Date)
+			if err != nil {
+				panic(err)
+			}
 			dur, err := stringToDuration(t.Date)
 			if err != nil {
 				panic(err)
@@ -110,6 +113,7 @@ func main() {
 			if dur > durMax {
 				durMax = dur
 			}
+
 		}
 		stop := time.NewTimer(durMax).C
 		tick := time.NewTicker(time.Second).C

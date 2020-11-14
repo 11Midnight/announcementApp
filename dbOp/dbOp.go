@@ -18,10 +18,18 @@ func InsertTask(db *sql.DB, registerDate, registerTask string) error {
 	return err
 
 }
+func DeleteTask(db *sql.DB, registerDate string) error {
+	sql, args, err := squirrel.Delete("*").From("tasks").Where("date = (?) ", registerDate).ToSql()
+	_, err = db.Exec(sql, args[0])
+	return err
+}
 
 func Connect(dataSoureName string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dataSoureName)
 	return db, err
+}
+func Close(db *sql.DB) {
+	db.Close()
 }
 
 //Считывает таски в структуру.
