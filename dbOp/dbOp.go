@@ -1,4 +1,5 @@
 package dbOp
+
 import (
 	"database/sql"
 	"github.com/Masterminds/squirrel"
@@ -11,24 +12,38 @@ type taskstr struct {
 	Task string
 }
 
-func InsertTask(db *sql.DB,registerDate,registerTask string)error{
+func InsertTask(db *sql.DB, registerDate, registerTask string) error {
 	sql, args, err := squirrel.Insert("tasks").Columns("date", "task").Values(registerDate, registerTask).ToSql()
 	_, err = db.Exec(sql, args[0], args[1])
 	return err
 
 }
-
+func DeleteTask(db *sql.DB, registerDate string) error {
+	sql, args, err := squirrel.Delete("*").From("tasks").Where("date = (?) ", registerDate).ToSql()
+	_, err = db.Exec(sql, args[0])
+	return err
+}
 
 func Connect(dataSoureName string) (*sql.DB, error) {
 	db, err := sql.Open("mysql", dataSoureName)
 	return db, err
 }
+func Close(db *sql.DB) {
+	db.Close()
+}
+
 //Считывает таски в структуру.
 func ReadTasks(db *sql.DB) (tasksw []taskstr, err error) {
-	rows, err := db.Query("select * from golang.tasks")
+	sql, _, err := squirrel.Select("*").From("golang.tasks").ToSql()
 	if err != nil {
 		return nil, err
 	}
+	//rows, err := db.Query("select * from golang.tasks")
+	rows, err := db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+
 	defer rows.Close()
 	tasks := []taskstr{}
 	for rows.Next() {
