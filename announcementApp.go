@@ -5,7 +5,6 @@ import (
 	"github.com/11Midnight/announcementApp/dbOp"
 	"github.com/11Midnight/announcementApp/kingpinOp"
 	_ "github.com/go-sql-driver/mysql"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
 	"strings"
 	"time"
@@ -34,6 +33,7 @@ func stringToDuration(timeTask string) (dur time.Duration, err error) {
 	if err != nil {
 		return 0, err
 	}
+	//dur := time.Until(ctime)
 	duration := ctime.Sub(time.Now().UTC())
 	return duration, nil
 }
@@ -67,7 +67,7 @@ func (p *eventNotifier) Notify(e Event) {
 
 //Обьявление аргументов и команд.
 var (
-	app            = kingpin.New("notification", "A notification of tasks application.")
+	app            = kingpinOp.NewApp("notification", "A notification of tasks application.")
 	register       = app.Command("register", "Register a new task.")
 	registerDate   = register.Arg("date", "Date of the task. Format: 'yyyy-MM-dd hh:mm:ss'").String()
 	registerTask   = register.Arg("task", "Description of task.").String()
@@ -76,6 +76,7 @@ var (
 )
 
 func main() {
+	fmt.Println(time.Now().UTC())
 	db, err := dbOp.Connect("root:@tcp(127.0.0.1:3306)/golang")
 	if err != nil {
 		panic(err)
